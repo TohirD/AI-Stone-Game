@@ -1,62 +1,165 @@
+const stonesContainer = document.getElementById("stones");
+const stonesCounter = document.getElementById("stones-counter");
+const resultContainer = document.getElementById("result");
+const startContainer = document.getElementById("start-game");
+const algorithmSelect = document.getElementById("algorithm-select");
+const startsWithSelect = document.getElementById("who-starts");
+const stonesNumberInput = document.getElementById("num-stones");
 
-let totalStones = Math.floor(Math.random() * (70 - 50 + 1)) + 50;
+const ALGORITHMS = {
+  MINIMAX: "minimax",
+  ALPHA_BETA: "alpha-beta",
+};
+const PARTICIPANTS = {
+  PLAYER: "player",
+  COMPUTER: "computer",
+};
+const MAX_STONES = 70;
+const MIN_STONES = 50;
+
+let totalStones = MIN_STONES;
 let playerScore = 0;
 let computerScore = 0;
 
-const stonesContainer = document.getElementById('stones');
-const resultContainer = document.getElementById('result');
-const startContainer = document.getElementById('start-game');
+stonesNumberInput.addEventListener("input", () => {
+  setInitialStones(parseInt(stonesNumberInput.value, 10));
 
-function startGame() {
-    const numStonesInput = document.getElementById('num-stones');
-    totalStones = parseInt(numStonesInput.value, 10);
-    playerScore = 0;
-    computerScore = 0;
-    updateStonesDisplay();
-    document.querySelectorAll('button').forEach(btn => btn.disabled = false);
-    startContainer.style.display = 'none'; // Hide the start game section
+  updateStonesDisplay();
+});
+
+async function startGame() {
+  const numOfStones = parseInt(stonesNumberInput.value, 10);
+
+  setInitialStones(numOfStones);
+  playerScore = 0;
+  computerScore = 0;
+
+  const startsWith = startsWithSelect.value;
+  updateStonesDisplay();
+  hideStartGameSection();
+  await setStartsWith(startsWith);
+}
+
+async function setStartsWith(startsWith) {
+  if (startsWith === PARTICIPANTS.PLAYER) {
+    setUserTakeBtnsDisabled(false);
+    return;
+  }
+
+  await computerTurn();
+}
+
+function setUserTakeBtnsDisabled(disabled = false) {
+  Array.from(document.getElementsByClassName("player-take-btn")).forEach(
+    (btn) => (btn.disabled = disabled),
+  );
+}
+
+function hideStartGameSection() {
+  startContainer.style.display = "none";
+}
+
+function setInitialStones(userSetStones) {
+  if (userSetStones < 50) {
+    return (totalStones = 50);
+  }
+
+  if (userSetStones > 70) {
+    return (totalStones = 70);
+  }
+
+  totalStones = userSetStones;
 }
 
 function updateStonesDisplay() {
-  stonesContainer.innerHTML = '';
+  stonesCounter.textContent = (totalStones < 0 ? 0 : totalStones) || 0;
+
+  stonesContainer.innerHTML = "";
   for (let i = 0; i < totalStones; i++) {
-    const stone = document.createElement('div');
-    stone.className = 'stone';
+    const stone = document.createElement("div");
+    stone.className = "stone";
     stonesContainer.appendChild(stone);
   }
 }
 
-function takeStones(number) {
+async function takeStones(stonesTaken) {
   if (totalStones <= 0) return;
 
-  totalStones -= number;
-  playerScore += number + (totalStones % 2 === 0 ? 2 : -2);
+  subtractStonesFromTotal(stonesTaken);
+
+  playerScore += stonesTaken + totalStonesBonus(totalStones);
   updateStonesDisplay();
   checkEndGame();
 
   if (totalStones > 0) {
-    setTimeout(computerTurn, 1000);
+    await computerTurn();
   }
 }
 
-function computerTurn() {
-  const computerMove = Math.random() > 0.5 ? 2 : 3;
-  if (totalStones <= 0) return;
+function sleep(ms = 1000) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  totalStones -= computerMove;
-  computerScore += computerMove + (totalStones % 2 === 0 ? 2 : -2);
+function totalStonesBonus(totalStones) {
+  return totalStones % 2 === 0 ? 2 : -2;
+}
+
+async function computerTurn() {
+  if (totalStones <= 0) return;
+  setUserTakeBtnsDisabled(true);
+  await sleep(200);
+
+  let computerMove = 0;
+  switch (algorithmSelect.value) {
+    case ALGORITHMS.MINIMAX:
+      computerMove = minimaxImplementation();
+      break;
+    case ALGORITHMS.ALPHA_BETA:
+      computerMove = alphaBetaImplementation();
+      break;
+    default:
+      break;
+  }
+
+  subtractStonesFromTotal(computerMove);
+  computerScore += computerMove + totalStonesBonus(totalStones);
   updateStonesDisplay();
   checkEndGame();
+  setUserTakeBtnsDisabled(false);
+}
+
+function subtractStonesFromTotal(number) {
+  totalStones -= number;
+
+  if (totalStones < 0) {
+    totalStones = 0;
+  }
+}
+
+function alphaBetaImplementation() {
+  return Math.random() > 0.5 ? 3 : 2;
+}
+
+function minimaxImplementation() {
+  return Math.random() > 0.5 ? 3 : 2;
 }
 
 function checkEndGame() {
-  if (totalStones <= 0) {
-    playerScore += totalStones;
-    let message = `Game Over. Player score: ${playerScore}, Computer score: ${computerScore}. `;
-    message += playerScore === computerScore ? "It's a draw!" : (playerScore > computerScore ? "Player wins!" : "Computer wins!");
-    resultContainer.textContent = message;
-    document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+  if (totalStones > 0) {
+    return;
   }
+
+  playerScore += totalStones;
+  let message = `Game Over. Player score: ${playerScore}, Computer score: ${computerScore}. `;
+  message +=
+    playerScore === computerScore
+      ? "It's a draw!"
+      : playerScore > computerScore
+        ? "Player wins!"
+        : "Computer wins!";
+  resultContainer.textContent = message;
+
+  setUserTakeBtnsDisabled(true);
 }
 
 updateStonesDisplay();
