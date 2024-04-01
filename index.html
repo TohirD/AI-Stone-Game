@@ -1,30 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-<title>Stones Game</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Stones Game</title>
+  </head>
+  <body>
     <div id="game-container">
-        <div id="start-game">
-            Enter number of stones: <input type="number" id="num-stones" min="1" max="100" value="50">
-            <button onclick="startGame()">Start Game</button>
-        </div>
-        <div id="stones"></div>
-        <!-- Existing controls and result divs remain the same -->
+      <div id="start-game">
+        <ul class="configuration-list">
+          <li>
+            <span>Enter number of stones: </span>
+            <input type="number" id="num-stones" min="50" max="70" value="50" />
+          </li>
+          <li>
+            <span>Choose the algorithm: </span>
+            <select id="algorithm-select">
+              <option value="minimax">Minimax algorithm</option>
+              <option value="alphabeta">Alpha-beta algorithm</option>
+            </select>
+          </li>
+          <li>
+            <span>Who starts: </span>
+            <select id="who-starts">
+              <option value="player">Player</option>
+              <option value="computer">Computer</option>
+            </select>
+          </li>
+        </ul>
+
+        <button onclick="startGame()">Start Game</button>
+      </div>
+      <!-- Existing controls and result divs remain the same -->
     </div>
-    
+
     <div id="game-container">
-        <div id="stones"></div>
-        <div id="controls">
-            <button onclick="takeStones(2)">Take 2 Stones</button>
-            <button onclick="takeStones(3)">Take 3 Stones</button>
-        </div>
-        <div id="result"></div>
+      <div>Current number of stones: <span id="stones-counter"></span></div>
+      <div id="stones"></div>
+      <div id="controls">
+        <button class="player-take-btn" disabled onclick="takeStones(2)">
+          Take 2 Stones
+        </button>
+        <button class="player-take-btn" disabled onclick="takeStones(3)">
+          Take 3 Stones
+        </button>
+      </div>
+      <div id="result"></div>
     </div>
-    
+
     <script src="index.js"></script>
-</body>
+  </body>
 </html>
