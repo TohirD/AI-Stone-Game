@@ -112,10 +112,10 @@ async function computerTurn() {
   let computerMove = 0;
   switch (algorithmSelect.value) {
     case ALGORITHMS.MINIMAX:
-      computerMove = minimaxImplementation();
+      computerMove = minimaxImplementation(totalStones);
       break;
     case ALGORITHMS.ALPHA_BETA:
-      computerMove = alphaBetaImplementation();
+      computerMove = alphaBetaImplementation(totalStones);
       break;
     default:
       break;
@@ -136,11 +136,11 @@ function subtractStonesFromTotal(number) {
   }
 }
 
-function alphaBetaImplementation() {
+function alphaBetaImplementation(totalStones) {
   return Math.random() > 0.5 ? 3 : 2;
 }
 
-function minimaxImplementation() {
+function minimaxImplementation(totalStones) {
   return Math.random() > 0.5 ? 3 : 2;
 }
 
