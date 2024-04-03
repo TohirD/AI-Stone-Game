@@ -124,7 +124,7 @@ while (totalStones > 1) {
   if (totalStones < 2) {
     break;
   }
-  let resultComputer = findBestMove(totalStones, score);
+  let resultComputer = findBestMove(totalStones);
   computerMove = resultComputer[0];
   score = resultComputer[1];
   path = resultComputer[2];

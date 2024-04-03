@@ -21,6 +21,10 @@ let totalStones = MIN_STONES;
 let playerScore = 0;
 let computerScore = 0;
 
+let gamePath = [];
+let path = [];
+let initialStones;
+
 stonesNumberInput.addEventListener("input", () => {
   setInitialStones(parseInt(stonesNumberInput.value, 10));
 
@@ -69,6 +73,7 @@ function setInitialStones(userSetStones) {
   }
 
   totalStones = userSetStones;
+  initialStones = totalStones;
 }
 
 function updateStonesDisplay() {
@@ -86,7 +91,7 @@ async function takeStones(stonesTaken) {
   if (totalStones <= 0) return;
 
   subtractStonesFromTotal(stonesTaken);
-
+  gamePath.push(Number(stonesTaken));
   playerScore += stonesTaken + totalStonesBonus(totalStones);
   updateStonesDisplay();
   checkEndGame();
@@ -141,11 +146,102 @@ function alphaBetaImplementation(totalStones) {
 }
 
 function minimaxImplementation(totalStones) {
-  return Math.random() > 0.5 ? 3 : 2;
+  let resultComputer = findBestMove(totalStones);
+  computerMove = resultComputer[0];
+  gamePath.push(Number(computerMove));
+  return computerMove;
+}
+
+function CalculateScore(initialStones, path) {
+  //evaluation function
+  let score = 0;
+  let maxPlayer = true;
+  let totalStones = initialStones;
+  for (let i = 0; i < gamePath.length; i++) {
+    //calculate points for what has already happened
+    totalStones -= gamePath[i];
+    score += maxPlayer ? gamePath[i] : -gamePath[i];
+    if (totalStones % 2 == 0) {
+      score += maxPlayer ? 2 : -2;
+    } else {
+      score += maxPlayer ? -2 : 2;
+    }
+    maxPlayer = !maxPlayer;
+  }
+  for (let i = 0; i < path.length; i++) {
+    totalStones -= path[i];
+    score += maxPlayer ? path[i] : -path[i];
+    if (totalStones % 2 == 0) {
+      score += maxPlayer ? 2 : -2;
+    } else {
+      score += maxPlayer ? -2 : 2;
+    }
+    maxPlayer = !maxPlayer;
+  }
+  return score;
+}
+function Minimax(totalStones, maxPlayer, path, depth) {
+  if (totalStones < 2 || depth == 0) {
+    return [CalculateScore(initialStones, path), path];
+  }
+  if (maxPlayer) {
+    let bestPath = [];
+    let bestScore = -Infinity;
+    for (let move of [2, 3]) {
+      let temp = [...path];
+      if (totalStones - move >= 0) {
+        temp.push(move);
+        let actual = Minimax(totalStones - move, false, temp, depth - 1);
+        let actualScore = actual[0];
+        let actualPath = actual[1];
+        if (Math.max(actualScore, bestScore) === actualScore) {
+          bestScore = actualScore;
+          bestPath = actualPath;
+        }
+      }
+    }
+    return [bestScore, bestPath];
+  } else {
+    let bestPath = [];
+    let bestScore = Infinity;
+    for (let move of [2, 3]) {
+      let temp = [...path];
+      if (totalStones - move >= 0) {
+        temp.push(move);
+        let actual = Minimax(totalStones - move, true, temp, depth - 1);
+        let actualScore = actual[0];
+        let actualPath = actual[1];
+        if (Math.min(actualScore, bestScore) === actualScore) {
+          bestScore = actualScore;
+          bestPath = actualPath;
+        }
+      }
+    }
+    return [bestScore, bestPath];
+  }
+}
+function findBestMove(totalStones) {
+  let bestMove = 0;
+  let bestPath = [];
+  let bestScore = Infinity;
+  for (let move of [2, 3]) {
+    path = [];
+    path.push(move);
+    if (totalStones - move >= 0) {
+      best = Minimax(totalStones - move, true, path, 20); //depth can be changed if needed here
+      let actualScore = best[0];
+      if (actualScore < bestScore) {
+        bestScore = actualScore;
+        bestMove = move;
+        bestPath = best[1];
+      }
+    }
+  }
+  return [bestMove, bestScore, bestPath];
 }
 
 function checkEndGame() {
-  if (totalStones > 0) {
+  if (totalStones > 1) {
     return;
   }
 
