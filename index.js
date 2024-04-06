@@ -142,7 +142,75 @@ function subtractStonesFromTotal(number) {
 }
 
 function alphaBetaImplementation(totalStones) {
-  return Math.random() > 0.5 ? 3 : 2;
+  function Points(totalStones, maxPlayer) {
+    if (totalStones == 0) {
+      return maxPlayer ? totalStones : -totalStones;
+    }
+    const movePoints = maxPlayer ? 2 : 3; 
+    return movePoints; 
+  }
+
+  function Minimax(totalStones, 
+                  maxPlayer, 
+                  depth, 
+                  alpha = -Infinity, 
+                  beta = Infinity) {
+                  if (totalStones < 2 || depth == 0) {
+      return Points(totalStones, !maxPlayer);
+    }
+
+    let bestScore;
+    if (maxPlayer) {
+      bestScore = alpha;
+      for (let move of [2, 3]) {
+        if (totalStones - move >= 0) {
+          let actualScore = Minimax(totalStones - move, 
+                                    false, 
+                                    depth - 1, 
+                                    bestScore, 
+                                    beta);
+          bestScore = Math.max(bestScore, actualScore);
+          if (bestScore >= beta) {
+            return bestScore;
+          }
+        }
+      }
+    } else {
+      bestScore = beta;
+      for (let move of [2, 3]) {
+        if (totalStones - move >= 0) {
+          let actualScore = Minimax(totalStones - move, 
+                                    true, 
+                                    depth - 1, 
+                                    alpha, 
+                                    bestScore);
+          bestScore = Math.min(bestScore, actualScore);
+          if (bestScore <= alpha) {
+            return bestScore;
+          }
+        }
+      }
+    }
+    return bestScore;
+  }
+
+  let bestMove = 0;
+  let bestScore = -Infinity;
+  for (let move of [2, 3]) {
+    if (totalStones - move >= 0) {
+      let score = Minimax(totalStones - move, 
+                          false, 
+                          6, 
+                          -Infinity, 
+                          Infinity);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+  }
+
+  return bestMove;
 }
 
 function minimaxImplementation(totalStones) {
