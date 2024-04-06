@@ -2,6 +2,7 @@ const stonesContainer = document.getElementById("stones");
 const stonesCounter = document.getElementById("stones-counter");
 const resultContainer = document.getElementById("result");
 const startContainer = document.getElementById("start-game");
+const scoreboardContainer = document.getElementById("scoreboard-container");
 const algorithmSelect = document.getElementById("algorithm-select");
 const startsWithSelect = document.getElementById("who-starts");
 const stonesNumberInput = document.getElementById("num-stones");
@@ -16,6 +17,7 @@ const PARTICIPANTS = {
 };
 const MAX_STONES = 70;
 const MIN_STONES = 50;
+const RESULTS_LS_KEY = "results";
 
 let totalStones = MIN_STONES;
 let playerScore = 0;
@@ -41,6 +43,7 @@ async function startGame() {
   const startsWith = startsWithSelect.value;
   updateStonesDisplay();
   hideStartGameSection();
+  hideScoreboardSection();
   await setStartsWith(startsWith);
 }
 
@@ -61,6 +64,10 @@ function setUserTakeBtnsDisabled(disabled = false) {
 
 function hideStartGameSection() {
   startContainer.style.display = "none";
+}
+
+function hideScoreboardSection() {
+  scoreboardContainer.style.display = "none";
 }
 
 function setInitialStones(userSetStones) {
@@ -85,6 +92,30 @@ function updateStonesDisplay() {
     stone.className = "stone";
     stonesContainer.appendChild(stone);
   }
+}
+
+function updateScoreboard() {
+  const scoreboard = getScoreboard();
+
+  const tbody = document.getElementById("scoreboard-body");
+  tbody.innerHTML = "";
+
+  scoreboard.forEach((result) => {
+    const row = document.createElement("tr");
+    const dateCell = document.createElement("td");
+    dateCell.textContent = result.date;
+    row.appendChild(dateCell);
+
+    const computerScoreCell = document.createElement("td");
+    computerScoreCell.textContent = result.computerScore;
+    row.appendChild(computerScoreCell);
+
+    const playerScoreCell = document.createElement("td");
+    playerScoreCell.textContent = result.playerScore;
+    row.appendChild(playerScoreCell);
+
+    tbody.appendChild(row);
+  });
 }
 
 async function takeStones(stonesTaken) {
@@ -146,16 +177,18 @@ function alphaBetaImplementation(totalStones) {
     if (totalStones == 0) {
       return maxPlayer ? totalStones : -totalStones;
     }
-    const movePoints = maxPlayer ? 2 : 3; 
-    return movePoints; 
+    const movePoints = maxPlayer ? 2 : 3;
+    return movePoints;
   }
 
-  function Minimax(totalStones, 
-                  maxPlayer, 
-                  depth, 
-                  alpha = -Infinity, 
-                  beta = Infinity) {
-                  if (totalStones < 2 || depth == 0) {
+  function Minimax(
+    totalStones,
+    maxPlayer,
+    depth,
+    alpha = -Infinity,
+    beta = Infinity,
+  ) {
+    if (totalStones < 2 || depth == 0) {
       return Points(totalStones, !maxPlayer);
     }
 
@@ -164,11 +197,13 @@ function alphaBetaImplementation(totalStones) {
       bestScore = alpha;
       for (let move of [2, 3]) {
         if (totalStones - move >= 0) {
-          let actualScore = Minimax(totalStones - move, 
-                                    false, 
-                                    depth - 1, 
-                                    bestScore, 
-                                    beta);
+          let actualScore = Minimax(
+            totalStones - move,
+            false,
+            depth - 1,
+            bestScore,
+            beta,
+          );
           bestScore = Math.max(bestScore, actualScore);
           if (bestScore >= beta) {
             return bestScore;
@@ -179,11 +214,13 @@ function alphaBetaImplementation(totalStones) {
       bestScore = beta;
       for (let move of [2, 3]) {
         if (totalStones - move >= 0) {
-          let actualScore = Minimax(totalStones - move, 
-                                    true, 
-                                    depth - 1, 
-                                    alpha, 
-                                    bestScore);
+          let actualScore = Minimax(
+            totalStones - move,
+            true,
+            depth - 1,
+            alpha,
+            bestScore,
+          );
           bestScore = Math.min(bestScore, actualScore);
           if (bestScore <= alpha) {
             return bestScore;
@@ -198,11 +235,7 @@ function alphaBetaImplementation(totalStones) {
   let bestScore = -Infinity;
   for (let move of [2, 3]) {
     if (totalStones - move >= 0) {
-      let score = Minimax(totalStones - move, 
-                          false, 
-                          6, 
-                          -Infinity, 
-                          Infinity);
+      let score = Minimax(totalStones - move, false, 6, -Infinity, Infinity);
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
@@ -323,7 +356,33 @@ function checkEndGame() {
         : "Computer wins!";
   resultContainer.textContent = message;
 
+  const scoreboard = getScoreboard();
+
+  scoreboard.unshift({
+    date: new Date().toLocaleDateString("en-GB", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+    playerScore,
+    computerScore,
+  });
+
+  setScoreboard(scoreboard);
+
   setUserTakeBtnsDisabled(true);
 }
 
+function getScoreboard() {
+  return JSON.parse(localStorage.getItem(RESULTS_LS_KEY)) || [];
+}
+
+function setScoreboard(scoreboard) {
+  localStorage.setItem(RESULTS_LS_KEY, JSON.stringify(scoreboard));
+}
+
 updateStonesDisplay();
+updateScoreboard();
