@@ -114,6 +114,17 @@ function updateScoreboard() {
     playerScoreCell.textContent = result.playerScore;
     row.appendChild(playerScoreCell);
 
+    const algorithmCell = document.createElement("td");
+    switch (result.algorithm) {
+      case ALGORITHMS.MINIMAX:
+        algorithmCell.textContent = "Minimax";
+      case ALGORITHMS.ALPHA_BETA:
+        algorithmCell.textContent = "Alpha-Beta";
+      default:
+        break;
+    }
+    row.appendChild(algorithmCell);
+
     tbody.appendChild(row);
   });
 }
@@ -369,6 +380,7 @@ function checkEndGame() {
     }),
     playerScore,
     computerScore,
+    algorithm: algorithmSelect.value,
   });
 
   setScoreboard(scoreboard);
@@ -382,6 +394,11 @@ function getScoreboard() {
 
 function setScoreboard(scoreboard) {
   localStorage.setItem(RESULTS_LS_KEY, JSON.stringify(scoreboard));
+}
+
+function clearScoreboard() {
+  localStorage.removeItem(RESULTS_LS_KEY);
+  updateScoreboard();
 }
 
 updateStonesDisplay();
