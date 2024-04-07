@@ -118,8 +118,10 @@ function updateScoreboard() {
     switch (result.algorithm) {
       case ALGORITHMS.MINIMAX:
         algorithmCell.textContent = "Minimax";
+        break;
       case ALGORITHMS.ALPHA_BETA:
         algorithmCell.textContent = "Alpha-Beta";
+        break;
       default:
         break;
     }
@@ -371,9 +373,6 @@ function findBestMove(totalStones) {
   }
   return [bestMove, bestScore, bestPath];
 }
-
-
-
 
 function checkEndGame() {
   if (totalStones > 1) {
