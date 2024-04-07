@@ -178,83 +178,89 @@ function subtractStonesFromTotal(number) {
   }
 }
 
+function CalculateScore(totalStones, path) {
+  // Evaluation function
+  let score = 0;
+  let maxPlayer = true;
+
+  for (let i = 0; i < path.length; i++) {
+      // Calculate points for the current path
+      totalStones -= path[i];
+      score += maxPlayer ? path[i] : -path[i];
+      if (totalStones % 2 === 0) {
+          score += maxPlayer ? 2 : -2;
+      } else {
+          score += maxPlayer ? -2 : 2;
+      }
+      maxPlayer = !maxPlayer;
+  }
+
+  return score;
+}
+
+function Minimax(totalStones, maxPlayer, path, depth, alpha, beta) {
+  if (totalStones < 2 || depth === 0) {
+      return [CalculateScore(totalStones, path), path];
+  }
+
+  let bestPath = [];
+  let bestScore = maxPlayer ? -Infinity : Infinity;
+
+  for (let move of [2, 3]) {
+      let tempPath = [...path, move];
+      if (totalStones - move >= 0) {
+          let actual = Minimax(totalStones - move, !maxPlayer, tempPath, depth - 1, alpha, beta);
+          let actualScore = actual[0];
+          if (maxPlayer) {
+              if (actualScore > bestScore) {
+                  bestScore = actualScore;
+                  bestPath = tempPath;
+              }
+              alpha = Math.max(alpha, bestScore);
+              if (beta <= alpha) break; 
+          } else {
+              if (actualScore < bestScore) {
+                  bestScore = actualScore;
+                  bestPath = tempPath;
+              }
+              beta = Math.min(beta, bestScore);
+              if (beta <= alpha) break; 
+          }
+      }
+  }
+
+  return [bestScore, bestPath];
+}
+
+function minimaxImplementation(totalStones) {
+  let result = Minimax(totalStones, true, [], 20, -Infinity, Infinity);
+  return result[1];
+}
+
 function alphaBetaImplementation(totalStones) {
-  function Points(totalStones, maxPlayer) {
-    if (totalStones == 0) {
-      return maxPlayer ? totalStones : -totalStones;
-    }
-    const movePoints = maxPlayer ? 2 : 3;
-    return movePoints;
-  }
-
-  function Minimax(
-    totalStones,
-    maxPlayer,
-    depth,
-    alpha = -Infinity,
-    beta = Infinity,
-  ) {
-    if (totalStones < 2 || depth == 0) {
-      return Points(totalStones, !maxPlayer);
-    }
-
-    let bestScore;
-    if (maxPlayer) {
-      bestScore = alpha;
-      for (let move of [2, 3]) {
-        if (totalStones - move >= 0) {
-          let actualScore = Minimax(
-            totalStones - move,
-            false,
-            depth - 1,
-            bestScore,
-            beta,
-          );
-          bestScore = Math.max(bestScore, actualScore);
-          if (bestScore >= beta) {
-            return bestScore;
-          }
-        }
-      }
-    } else {
-      bestScore = beta;
-      for (let move of [2, 3]) {
-        if (totalStones - move >= 0) {
-          let actualScore = Minimax(
-            totalStones - move,
-            true,
-            depth - 1,
-            alpha,
-            bestScore,
-          );
-          bestScore = Math.min(bestScore, actualScore);
-          if (bestScore <= alpha) {
-            return bestScore;
-          }
-        }
-      }
-    }
-    return bestScore;
-  }
-
   let bestMove = 0;
   let bestScore = -Infinity;
+  let alpha = -Infinity;
+  let beta = Infinity;
+
   for (let move of [2, 3]) {
-    if (totalStones - move >= 0) {
-      let score = Minimax(totalStones - move, false, 6, -Infinity, Infinity);
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
+      if (totalStones - move >= 0) {
+          let score = Minimax(totalStones - move, false, [move], 20, alpha, beta)[0];
+          if (score > bestScore) {
+              bestScore = score;
+              bestMove = move;
+          }
+          alpha = Math.max(alpha, bestScore);
+          if (beta <= alpha) break; 
       }
-    }
   }
 
   return bestMove;
 }
 
-function minimaxImplementation(totalStones) {
-  return Math.random() > 0.5 ? 3 : 2;
-}
+
+
+
 
 function checkEndGame() {
   if (totalStones > 0) {
